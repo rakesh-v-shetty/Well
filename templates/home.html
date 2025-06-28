@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Water Well Predictor App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+    <style>
+        /* Custom styles to ensure Inter font is applied and general resets */
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        /* Override Tailwind's default to make sure links within sections stand out on hover */
+        a {
+            transition: color 0.3s ease;
+        }
+        /* For mobile menu, ensuring it slides down smoothly */
+        #mobile-menu {
+            transition: transform 0.3s ease-out, opacity 0.3s ease-out, visibility 0.3s ease-out;
+            transform: translateY(-100%); /* Start hidden */
+            opacity: 0; /* Start invisible */
+            visibility: hidden; /* Hide element completely for accessibility */
+            pointer-events: none; /* Prevent interaction when hidden */
+        }
+        #mobile-menu.is-open {
+            transform: translateY(0);
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
+
+        /* Overlay for mobile menu */
+        #menu-overlay {
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 30; /* Adjusted z-index relative to mobile menu */
+            transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
+            opacity: 0; /* Start invisible */
+            visibility: hidden; /* Hide element completely */
+            pointer-events: none; /* Prevent interaction when hidden */
+        }
+        #menu-overlay.is-open {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
+
+        /* Keyframe animations for subtle background pulses - from home.html */
+        @keyframes pulse-slow {
+            0% { transform: scale(1) translateX(0); opacity: 0.2; }
+            50% { transform: scale(1.05) translateX(10px); opacity: 0.25; }
+            100% { transform: scale(1) translateX(0); opacity: 0.2; }
+        }
+
+        @keyframes pulse-slow-reverse {
+            0% { transform: scale(1) translateX(0); opacity: 0.2; }
+            50% { transform: scale(1.05) translateX(-10px); opacity: 0.25; }
+            100% { transform: scale(1) translateX(0); opacity: 0.2; }
+        }
+
+        .animate-pulse-slow {
+            animation: pulse-slow 8s infinite ease-in-out;
+        }
+
+        .animate-pulse-slow-reverse {
+            animation: pulse-slow-reverse 8s infinite ease-in-out;
+        }
+
+        /* Custom scrollbar for better aesthetics, matching dark theme */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #111; /* Darker track */
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #444; /* Dark gray thumb */
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555; /* Lighter gray on hover */
+        }
+    </style>
+</head>
+<body class="bg-zinc-950 text-white min-h-screen antialiased">
+    <div class="relative overflow-hidden">
+
+        <header class="bg-black py-4 border-b border-gray-800 shadow-lg relative z-50">
+            <nav class="container mx-auto px-4 flex justify-between items-center" aria-label="Main Navigation">
+                <a href="#hero-section" class="text-yellow-500 text-2xl md:text-3xl font-extrabold tracking-tight hover:text-yellow-400 transition-colors duration-300">Well-Sense</a>
+                <ul class="hidden md:flex space-x-8 text-sm md:text-base font-medium">
+                    <li><a href="#hero-section" class="text-gray-300 hover:text-yellow-500 transition-colors duration-200">Home</a></li>
+                    <li><a href="#features-benefits" class="text-gray-300 hover:text-yellow-500 transition-colors duration-200">Features</a></li>
+                    <li><a href="/prediction_form" class="text-gray-300 hover:text-yellow-500 transition-colors duration-200">Try Now</a></li>
+                    <li><a href="#footer-section" class="text-gray-300 hover:text-yellow-500 transition-colors duration-200">Contact</a></li>
+                </ul>
+                <button id="mobile-menu-button" class="md:hidden text-white focus:outline-none" aria-expanded="false" aria-controls="mobile-menu" aria-label="Toggle mobile menu">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+            </nav>
+            <div id="menu-overlay" class="fixed inset-0 bg-black bg-opacity-70 z-30"></div>
+            <div id="mobile-menu" class="md:hidden fixed top-0 left-0 w-full bg-black z-40 shadow-xl py-6" role="menu">
+                <ul class="flex flex-col items-center space-y-5 text-lg font-medium">
+                    <li><a href="#hero-section" class="text-gray-300 hover:text-yellow-500 transition-colors duration-200" role="menuitem">Home</a></li>
+                    <li><a href="#features-benefits" class="text-gray-300 hover:text-yellow-500 transition-colors duration-200" role="menuitem">Features</a></li>
+                    <li><a href="/prediction_form" class="text-gray-300 hover:text-yellow-500 transition-colors duration-200" role="menuitem">Try Now</a></li>
+                    <li><a href="#footer-section" class="text-gray-300 hover:text-yellow-500 transition-colors duration-200" role="menuitem">Contact</a></li>
+                </ul>
+            </div>
+        </header>
+
+        <main>
+            <section id="hero-section" class="relative bg-gradient-to-br from-zinc-950 to-black py-20 md:py-32 lg:py-48 overflow-hidden">
+                <div class="absolute top-40 -left-20 w-80 h-80 md:w-96 md:h-96 bg-yellow-500 rounded-full opacity-15 blur-2xl animate-pulse-slow"></div>
+                <div class="absolute bottom-10 -right-20 w-80 h-80 md:w-96 md:h-96 bg-yellow-500 rounded-full opacity-15 blur-2xl animate-pulse-slow-reverse"></div>
+
+                <div class="relative z-10 container mx-auto px-6 text-center max-w-4xl">
+                    <h1 class="text-4xl sm:text-5xl lg:text-7xl font-extrabold leading-tight mb-6"
+                        data-aos="fade-up" data-aos-duration="1000">
+                        AI Enabled <span class="text-yellow-500">Water Well Predictor App</span>
+                    </h1>
+                    <p class="text-base sm:text-lg lg:text-xl text-gray-300 max-w-3xl mx-auto mb-12 leading-relaxed"
+                        data-aos="fade-up" data-aos-delay="200" data-aos-duration="1000">
+                        Leverage artificial intelligence to make informed decisions regarding water well construction, depth, discharge, drilling techniques, and groundwater quality.
+                    </p>
+                    <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-6">
+                        <a href="/prediction_form" rel="noopener noreferrer" class="bg-yellow-500 text-black font-semibold py-3 px-10 rounded-lg shadow-xl hover:bg-yellow-600 hover:scale-105 transition duration-300 transform group"
+                            data-aos="fade-up" data-aos-delay="400" data-aos-duration="1000">
+                            Try Now!
+                            <span class="inline-block ml-2 transition-transform duration-300 group-hover:translate-x-1">&rarr;</span>
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <section id="features-benefits" class="bg-zinc-900 py-16 md:py-24 lg:py-32">
+                <div class="container mx-auto px-6 text-center max-w-6xl">
+                    <h2 class="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-16"
+                        data-aos="fade-up" data-aos-duration="1000">Key Aspects of the App</h2>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8 md:gap-12 justify-center">
+
+                        <div class="bg-zinc-800 border border-gray-700 rounded-xl p-8 text-left shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 flex flex-col"
+                            data-aos="zoom-in" data-aos-duration="1000">
+                            <h3 class="text-2xl font-bold text-white mb-4 pb-2 border-b border-yellow-500">Problem Statement</h3>
+                            <p class="text-gray-400 text-base leading-relaxed flex-grow">The web-based system is expected to help common users in making decisions regarding water well in a particular location, addressing the uncertainty and traditional guesswork involved.</p>
+                        </div>
+
+                        <div class="bg-zinc-800 border border-gray-700 rounded-xl p-8 text-left shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 flex flex-col"
+                            data-aos="zoom-in" data-aos-delay="100" data-aos-duration="1000">
+                            <h3 class="text-2xl font-bold text-white mb-4 pb-2 border-b border-yellow-500">Key Features</h3>
+                            <ul class="text-gray-400 text-base leading-relaxed list-disc ml-5 flex-grow space-y-2">
+                                <li>**Suitability Assessment:** Determine if an area is suitable for water well construction.</li>
+                                <li>**Depth Prediction:** Predict the optimal depth of water bearing zones.</li>
+                                <li>**Discharge Estimation:** Estimate the expected water discharge of the well.</li>
+                                <li>**Drilling Technique Recommendation:** Suggest the most suitable drilling technique for the specific area.</li>
+                                <li>**Groundwater Quality Prediction:** Provide insights into the expected quality of groundwater.</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-zinc-800 border border-gray-700 rounded-xl p-8 text-left shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 flex flex-col"
+                            data-aos="zoom-in" data-aos-delay="200" data-aos-duration="1000">
+                            <h3 class="text-2xl font-bold text-white mb-4 pb-2 border-b border-yellow-500">Use Cases</h3>
+                            <ul class="text-gray-400 text-base leading-relaxed list-disc ml-5 flex-grow space-y-2">
+                                <li>**Resource Optimization:** Efficiently distribute water resources for agriculture and industry based on predictions.</li>
+                                <li>**Preventative Maintenance:** Anticipate well performance issues and plan maintenance before disruptions occur.</li>
+                                <li>**Drought Preparedness:** Forecast groundwater levels to better prepare for and manage drought conditions.</li>
+                                <li>**Sustainable Planning:** Aid in planning for new developments to ensure sustainable water access.</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-zinc-800 border border-gray-700 rounded-xl p-8 text-left shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 flex flex-col"
+                            data-aos="zoom-in" data-aos-delay="300" data-aos-duration="1000">
+                            <h3 class="text-2xl font-bold text-white mb-4 pb-2 border-b border-yellow-500">Benefits</h3>
+                            <ul class="text-gray-400 text-base leading-relaxed list-disc ml-5 flex-grow space-y-2">
+                                <li>**Data-Driven Insights:** Extract valuable and actionable insights from well data using AI.</li>
+                                <li>**Significant Cost Savings:** Reduce operational costs and unnecessary drilling expenses through optimized well management.</li>
+                                <li>**Enhanced Sustainability:** Promote eco-friendly water resource stewardship and conservation.</li>
+                                <li>**Improved Time Efficiency:** Save time with automated predictions and reliable recommendations.</li>
+                                <li>**Maximized Yield:** For agricultural users, maximize crop yield with precise and timely water allocation.</li>
+                            </ul>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer id="footer-section" class="bg-black py-10 md:py-16 border-t border-gray-800">
+            <div class="container mx-auto px-6 text-center text-gray-500 text-sm">
+                <p class="mb-4">&copy; 2025 PixelBytes. All rights reserved.</p>
+                <div class="mt-4 flex justify-center space-x-6">
+                    <a href="#" class="hover:text-white transition-colors duration-200" aria-label="Privacy Policy">Privacy Policy</a>
+                    <a href="#" class="hover:text-white transition-colors duration-200" aria-label="Terms of Service">Terms of Service</a>
+                    <a href="#" class="hover:text-white transition-colors duration-200" aria-label="Contact Us">Contact Us</a>
+                </div>
+                <div class="mt-6 flex justify-center space-x-4">
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors duration-200" aria-label="Twitter">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M22.25 6.474a.75.75 0 00-.75-.75h-1.5c-.414 0-.75.336-.75.75v.25c-.01.372-.008.744-.002 1.116-.002.046-.002.09-.002.136a9.567 9.567 0 01-18.068 4.792c-.172-.344-.298-.716-.39-1.096a.75.75 0 00-.75-.75h-.5c-.414 0-.75.336-.75.75s.336.75.75.75h.5c.022.09.048.178.078.266.126.356.286.69.48 1.01a11.026 11.026 0 0019.294-10.222zm-2.028 10.468c.288 0 .52-.232.52-.52s-.232-.52-.52-.52h-2.12c-.288 0-.52.232-.52.52s.232.52.52.52h2.12zm0 2.6c.288 0 .52-.232.52-.52s-.232-.52-.52-.52h-2.12c-.288 0-.52.232-.52.52s.232.52.52.52h2.12zm-4.73-3.69c.288 0 .52-.232.52-.52s-.232-.52-.52-.52h-2.12c-.288 0-.52.232-.52.52s.232.52.52.52h2.12zM9 12.75c-1.24 0-2.25-1.01-2.25-2.25s1.01-2.25 2.25-2.25 2.25 1.01 2.25 2.25-1.01 2.25-2.25 2.25zm0 1.5c2.07 0 3.75-1.68 3.75-3.75S11.07 8.25 9 8.25 5.25 9.93 5.25 12s1.68 3.75 3.75 3.75zm12.376 3.722c-.288 0-.52-.232-.52-.52s.232-.52.52-.52h-2.12c-.288 0-.52.232-.52.52s.232.52.52.52h2.12zm0 2.6c.288 0 .52-.232.52-.52s-.232-.52-.52-.52h-2.12c-.288 0-.52.232-.52.52s.232.52.52.52h2.12z"/></svg>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors duration-200" aria-label="LinkedIn">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M19.78 2H4.22A2.22 2.22 0 002 4.22v15.56A2.22 2.22 0 004.22 22h15.56A2.22 2.22 0 0022 19.78V4.22A2.22 2.22 0 0019.78 2zM8 19V9h3v10H8zm-1.5-6.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3zM19 19h-3v-5.604c0-3.366-4-3.113-4 0V19H9V9h3v1.895c.78-.962 2.4-1.895 4-1.895 2.91 0 5 1.769 5 5.249V19z"/></svg>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors duration-200" aria-label="Facebook">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.776-3.89 1.094 0 2.24.195 2.24.195v2.459h-1.264c-1.244 0-1.63.777-1.63 1.56V12h2.773l-.443 2.891h-2.33V22C18.343 21.128 22 16.991 22 12z"/></svg>
+                    </a>
+                </div>
+            </div>
+        </footer>
+
+    </div>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        // Initialize AOS with desired settings
+        AOS.init({
+            once: true,
+            mirror: false,
+            duration: 800,
+            easing: 'ease-out-cubic',
+        });
+
+        // JavaScript for Mobile Menu Toggle
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const menuOverlay = document.getElementById('menu-overlay');
+
+        function toggleMobileMenu() {
+            const isMenuCurrentlyClosed = !mobileMenu.classList.contains('is-open');
+            mobileMenu.classList.toggle('is-open', isMenuCurrentlyClosed);
+            menuOverlay.classList.toggle('is-open', isMenuCurrentlyClosed);
+            mobileMenuButton.setAttribute('aria-expanded', isMenuCurrentlyClosed);
+            document.body.style.overflow = isMenuCurrentlyClosed ? 'hidden' : '';
+        }
+
+        mobileMenuButton.addEventListener('click', toggleMobileMenu);
+
+        mobileMenu.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                if (mobileMenu.classList.contains('is-open')) {
+                    toggleMobileMenu();
+                }
+            });
+        });
+
+        menuOverlay.addEventListener('click', toggleMobileMenu);
+    </script>
+</body>
+</html>
